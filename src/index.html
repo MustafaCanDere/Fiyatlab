@@ -88,16 +88,18 @@
 
   <details id="settings" class="card settings">
     <summary>Ayarlar <span id="keyState" class="badge"></span></summary>
-    <label>Claude API anahtarı
-      <input id="apiKey" type="password" autocomplete="off" placeholder="sk-ant-...">
+    <label>Yapay zeka
+      <select id="provider"></select>
     </label>
-    <p class="small">Anahtarı <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">console.anthropic.com</a> adresinden alabilirsin. Sadece bu cihazda saklanır.</p>
+    <label><span id="keyLabel">API anahtarı</span>
+      <input id="apiKey" type="password" autocomplete="off">
+    </label>
+    <p class="small">Anahtarı <a id="keyLink" href="#" target="_blank" rel="noopener noreferrer">buradan</a> alabilirsin. Sadece bu cihazda saklanır.</p>
     <label>Model
-      <select id="model">
-        <option value="claude-opus-5-5">Claude Opus 5.5 (en iyi sonuç)</option>
-        <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (daha ucuz)</option>
-      </select>
+      <input id="model" list="modelList" autocomplete="off" spellcheck="false">
+      <datalist id="modelList"></datalist>
     </label>
+    <p class="small">Listeden seçebilir ya da başka bir model adı yazabilirsin.</p>
     <button id="saveKey" type="button">Kaydet</button>
   </details>
 

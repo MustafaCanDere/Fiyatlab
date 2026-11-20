@@ -1,6 +1,6 @@
 # Fiyatlab
 
-Bir ürün linki yapıştırırsın (Trendyol, Hepsiburada, Amazon.com.tr, n11...). Uygulama Claude ile:
+Bir ürün linki yapıştırırsın (Trendyol, Hepsiburada, Amazon.com.tr, n11...). Uygulama seçtiğin yapay zeka ile (Claude, ChatGPT veya Gemini):
 
 - ürün sayfasını okur, özellikleri ve fiyatı çıkarır,
 - kullanıcı yorumlarını, şikayetleri ve incelemeleri web'de arar,
@@ -15,7 +15,7 @@ Bir ürün linki yapıştırırsın (Trendyol, Hepsiburada, Amazon.com.tr, n11..
 
 1. Bu deponun **Releases** bölümünden en son `fiyatlab.apk` dosyasını telefonuna indir.
 2. Dosyayı aç. Telefon "bilinmeyen kaynaklar" uyarısı verirse bu kaynağa izin ver.
-3. Uygulamayı açınca **Ayarlar**'a Claude API anahtarını gir ve Kaydet'e bas.
+3. Uygulamayı açınca **Ayarlar**'dan yapay zekayı seç, API anahtarını gir ve Kaydet'e bas.
 
 Her `main` dalına yükleme yapıldığında GitHub Actions yeni bir APK derleyip Releases'e koyar.
 
@@ -27,13 +27,23 @@ Android, Play Store dışındaki uygulamaların kendini sessizce güncellemesine
 
 Tüm APK'lar depodaki `android/app/fiyatlab.keystore` anahtarıyla imzalanır, bu sayede her sürüm bir öncekinin üstüne kurulabilir. Bu anahtar kişisel kullanım içindir; uygulamayı Play Store'a koymak istersen gizli tutulan yeni bir anahtar oluşturmak gerekir.
 
-## Claude API anahtarı
+## Yapay zeka ve API anahtarı
 
-[console.anthropic.com](https://console.anthropic.com/settings/keys) adresinden hesap aç, anahtar oluştur ve hesaba biraz kredi yükle. Anahtar sadece telefonunda saklanır, başka bir yere gönderilmez (yalnızca Claude API'ye istek atarken kullanılır).
+Ayarlardan üç sağlayıcıdan birini seçebilirsin. Her birinin anahtarı ayrı saklanır, aralarında istediğin zaman geçebilirsin.
+
+| Sağlayıcı | Anahtarı nereden alırsın | Varsayılan model |
+|---|---|---|
+| Claude (Anthropic) | [console.anthropic.com](https://console.anthropic.com/settings/keys) | `claude-opus-5-5` (daha ucuzu: `claude-sonnet-5-5`) |
+| ChatGPT (OpenAI) | [platform.openai.com](https://platform.openai.com/api-keys) | `gpt-6.2-astra` |
+| Gemini (Google) | [aistudio.google.com](https://aistudio.google.com/apikey) | `gemini-3.5-flash` |
+
+Model alanına listede olmayan başka bir model adı da yazabilirsin. Anahtarlar sadece telefonunda saklanır ve yalnızca seçtiğin sağlayıcıya istek atarken kullanılır.
+
+Farklar: Claude ilerlemeyi adım adım gösterir (hangi aramayı yaptığını görürsün). OpenAI ve Gemini sonucu araştırma bitince toplu verir. Gemini'nin ücretsiz kotası olduğu için denemek için en ucuz seçenek odur.
 
 ## Maliyet
 
-Her analizde Claude web'de 10-20 arama ve sayfa okuması yapar. Claude Opus 5.5 ile bir analiz kabaca birkaç on sent ile 1 dolar arası tutabilir. Ayarlardan daha ucuz olan Claude Sonnet 5.5'i seçebilirsin.
+Her analizde yapay zeka web'de 10-20 arama ve sayfa okuması yapar. Claude Opus 5.5 ile bir analiz kabaca birkaç on sent ile 1 dolar arası tutabilir; daha ucuz modeller (Claude Sonnet 5.5, Gemini Flash) çok daha az tutar.
 
 ## Bilgisayarda çalıştırma
 
@@ -55,7 +65,9 @@ npm run apk        # çıktı: android/app/build/outputs/apk/debug/app-debug.apk
 
 ## Dosyalar
 
-- `src/analyze.js`: Claude API'yi web arama ve sayfa okuma araçlarıyla çağıran kısım
+- `src/analyze.js`: sağlayıcı seçimi
+- `src/providers/`: Claude, OpenAI ve Gemini ile web araştırması yapan kısımlar
+- `src/prompt.js`: ortak talimat ve sonuç okuma
 - `src/main.js`, `src/index.html`: arayüz
 - `src/update.js`: yeni sürüm kontrolü
 - `android/`: Capacitor ile oluşturulmuş Android projesi
@@ -63,5 +75,5 @@ npm run apk        # çıktı: android/app/build/outputs/apk/debug/app-debug.apk
 
 ## Notlar
 
-- Bazı siteler otomatik okumayı engelleyebilir; o durumda Claude ürünü adıyla arayıp başka kaynaklardan bilgi toplar.
+- Bazı siteler otomatik okumayı engelleyebilir; o durumda yapay zeka ürünü adıyla arayıp başka kaynaklardan bilgi toplar.
 - Fiyatlar ve stoklar hızla değişir; satın almadan önce linkleri kontrol et.

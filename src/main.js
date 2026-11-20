@@ -1,4 +1,4 @@
-import { analyze } from "./analyze.js";
+import { analyze, PROVIDERS } from "./analyze.js";
 import { checkForUpdate, currentVersion } from "./update.js";
 
 const $ = (s) => document.querySelector(s);
@@ -79,24 +79,46 @@ const store = {
   get: (k) => { try { return localStorage.getItem(k) || ""; } catch { return ""; } },
   set: (k, v) => { try { localStorage.setItem(k, v); } catch {} },
 };
+// Her sağlayıcının anahtarı ve modeli ayrı saklanır (ör. apiKey:openai).
+const keyOf = (p) => store.get(`apiKey:${p}`) || (p === "claude" ? store.get("apiKey") : "");
+const modelOf = (p) => store.get(`model:${p}`) || (p === "claude" && store.get("model")) || PROVIDERS[p].models[0];
+const providerNow = () => (PROVIDERS[store.get("provider")] ? store.get("provider") : "claude");
+
+$("#provider").innerHTML = Object.entries(PROVIDERS).map(([id, p]) => `<option value="${id}">${esc(p.label)}</option>`).join("");
+
+function fillProviderFields(p) {
+  const info = PROVIDERS[p];
+  $("#keyLabel").textContent = `${info.label} API anahtarı`;
+  $("#apiKey").placeholder = info.keyHint;
+  $("#apiKey").value = keyOf(p);
+  $("#keyLink").href = info.keyUrl;
+  $("#modelList").innerHTML = info.models.map((m) => `<option value="${esc(m)}">`).join("");
+  $("#model").value = modelOf(p);
+}
+$("#provider").addEventListener("change", () => fillProviderFields($("#provider").value));
+
 function refreshKeyState() {
-  const has = !!store.get("apiKey");
-  $("#keyState").textContent = has ? "Anahtar kayıtlı" : "Anahtar gerekli";
+  const p = providerNow();
+  const has = !!keyOf(p);
+  $("#keyState").textContent = has ? `${PROVIDERS[p].label.split(" ")[0]} · ${modelOf(p)}` : "Anahtar gerekli";
   if (!has) $("#settings").open = true;
 }
-$("#apiKey").value = store.get("apiKey");
-$("#model").value = store.get("model") || "claude-opus-5-5";
+$("#provider").value = providerNow();
+fillProviderFields(providerNow());
 $("#saveKey").addEventListener("click", () => {
-  store.set("apiKey", $("#apiKey").value.trim());
-  store.set("model", $("#model").value);
+  const p = $("#provider").value;
+  store.set("provider", p);
+  store.set(`apiKey:${p}`, $("#apiKey").value.trim());
+  store.set(`model:${p}`, $("#model").value.trim() || PROVIDERS[p].models[0]);
   refreshKeyState();
-  if (store.get("apiKey")) $("#settings").open = false;
+  if (keyOf(p)) $("#settings").open = false;
 });
 refreshKeyState();
 
 $("#form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const apiKey = store.get("apiKey");
+  const provider = providerNow();
+  const apiKey = keyOf(provider);
   if (!apiKey) { $("#settings").open = true; $("#apiKey").focus(); return; }
   const url = $("#url").value.trim();
   if (!/^https?:\/\//i.test(url)) { alertBox("Lütfen geçerli bir ürün linki girin (https://...)"); return; }
@@ -112,7 +134,7 @@ $("#form").addEventListener("submit", async (e) => {
   try {
     addStep("Ürün sayfası inceleniyor...");
     const data = await analyze({
-      apiKey, model: store.get("model") || "claude-opus-5-5",
+      provider, apiKey, model: modelOf(provider),
       url, note: $("#note").value.trim().slice(0, 500), onStatus: addStep,
     });
     status.hidden = true;
