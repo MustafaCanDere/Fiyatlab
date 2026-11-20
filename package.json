@@ -1,0 +1,22 @@
+{
+  "name": "fiyatlab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ürün linkini yapıştır: Claude ürünü web'de araştırsın, analiz etsin ve daha iyi alternatifler önersin. Android uygulaması (Capacitor).",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "serve": "npm run build && npx --yes serve www -l 3000",
+    "android": "npm run build && npx cap sync android",
+    "apk": "npm run android && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.11.0",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
+    "esbuild": "^0.28.2"
+  }
+}
