@@ -23,7 +23,7 @@ function describeToolUse(block) {
 }
 
 function friendlyError(err) {
-  if (err instanceof Anthropic.AuthenticationError) return "API anahtarı geçersiz. Ayarlardan kontrol edin.";
+  if (err instanceof Anthropic.AuthenticationError) return "Claude API anahtarı geçersiz. console.anthropic.com adresinden yeniden kopyala.";
   if (err instanceof Anthropic.PermissionDeniedError) return "Bu API anahtarının bu modele erişimi yok.";
   if (err instanceof Anthropic.RateLimitError) return "Çok fazla istek gönderildi, biraz bekleyip tekrar deneyin.";
   if (err instanceof Anthropic.APIConnectionError) return "Claude'a bağlanılamadı. İnternet bağlantınızı kontrol edin.";
@@ -80,4 +80,14 @@ export async function analyzeWithClaude({ apiKey, model, url, note, onStatus, si
 
   const text = final.content.filter((b) => b.type === "text").map((b) => b.text).join("");
   return parseResult(text);
+}
+
+export async function testClaudeKey(apiKey, model) {
+  const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true, maxRetries: 0 });
+  try {
+    await client.models.retrieve(model);
+  } catch (err) {
+    throw new Error(friendlyError(err));
+  }
+  return `Anahtar çalışıyor, ${model} modeli kullanılabilir.`;
 }

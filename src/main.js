@@ -1,4 +1,4 @@
-import { analyze, PROVIDERS } from "./analyze.js";
+import { analyze, testKey, PROVIDERS } from "./analyze.js";
 import { checkForUpdate, currentVersion } from "./update.js";
 
 const $ = (s) => document.querySelector(s);
@@ -105,13 +105,39 @@ function refreshKeyState() {
 }
 $("#provider").value = providerNow();
 fillProviderFields(providerNow());
-$("#saveKey").addEventListener("click", () => {
+// Kopyala-yapıştırda gelen boşluk, satır sonu, görünmez karakter ve tırnakları temizle.
+const cleanKey = (k) => String(k || "").replace(/[\s\u200B-\u200D\uFEFF"'`]/g, "");
+
+// Ayarlar yazarken otomatik kaydedilir; "Kaydet"e basmayı unutmak sorun olmaz.
+function saveSettings() {
   const p = $("#provider").value;
   store.set("provider", p);
-  store.set(`apiKey:${p}`, $("#apiKey").value.trim());
+  store.set(`apiKey:${p}`, cleanKey($("#apiKey").value));
   store.set(`model:${p}`, $("#model").value.trim() || PROVIDERS[p].models[0]);
   refreshKeyState();
-  if (keyOf(p)) $("#settings").open = false;
+}
+["#apiKey", "#model"].forEach((id) => $(id).addEventListener("input", saveSettings));
+$("#provider").addEventListener("change", saveSettings);
+$("#saveKey").addEventListener("click", () => {
+  saveSettings();
+  if (keyOf($("#provider").value)) $("#settings").open = false;
+});
+
+$("#testKey").addEventListener("click", async () => {
+  saveSettings();
+  const p = $("#provider").value, out = $("#testResult");
+  const key = keyOf(p);
+  if (!key) { out.className = "small error"; out.textContent = "Önce anahtarı gir."; return; }
+  out.className = "small"; out.textContent = "Deneniyor...";
+  $("#testKey").disabled = true;
+  try {
+    const r = await testKey(p, key, modelOf(p));
+    out.className = "small ok"; out.textContent = r;
+  } catch (err) {
+    out.className = "small error"; out.textContent = err.message;
+  } finally {
+    $("#testKey").disabled = false;
+  }
 });
 refreshKeyState();
 

@@ -72,6 +72,10 @@
   select { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line);
     background: var(--bg); color: var(--text); font: inherit; }
   .settings button { margin-top: 12px; }
+  .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  button.secondary { background: var(--chip); color: var(--text); }
+  .ok { color: var(--good); font-weight: 600; }
+  .error { word-break: break-word; }
   .update { display: flex; gap: 12px; align-items: center; justify-content: space-between;
     background: var(--card); border: 2px solid var(--accent); border-radius: 14px; padding: 14px 16px; margin-bottom: 20px; }
   .btn { padding: 10px 16px; border-radius: 10px; background: var(--accent); color: var(--accent-ink);
@@ -100,7 +104,11 @@
       <datalist id="modelList"></datalist>
     </label>
     <p class="small">Listeden seçebilir ya da başka bir model adı yazabilirsin.</p>
-    <button id="saveKey" type="button">Kaydet</button>
+    <div class="btns">
+      <button id="saveKey" type="button">Kaydet</button>
+      <button id="testKey" type="button" class="secondary">Anahtarı dene</button>
+    </div>
+    <p id="testResult" class="small" aria-live="polite"></p>
   </details>
 
   <form id="form">

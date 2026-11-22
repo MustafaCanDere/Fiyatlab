@@ -4,12 +4,24 @@ import { buildPrompt, parseResult } from "../prompt.js";
 async function friendlyHttpError(res) {
   let msg = "";
   try { msg = (await res.json())?.error?.message || ""; } catch {}
-  if (res.status === 401) return "OpenAI API anahtarı geçersiz. Ayarlardan kontrol edin.";
+  const detail = msg ? ` (OpenAI: ${msg})` : "";
+  if (res.status === 401) return `OpenAI API anahtarı geçersiz${detail}. platform.openai.com/api-keys adresinden yeniden kopyala.`;
   if (res.status === 429) return /quota|billing/i.test(msg)
-    ? "OpenAI hesabınızda kredi/kota yok. platform.openai.com üzerinden kontrol edin."
-    : "Çok fazla istek gönderildi, biraz bekleyip tekrar deneyin.";
-  if (res.status === 404) return `Model bulunamadı. Ayarlardaki model adını kontrol edin. ${msg}`;
-  return `OpenAI hatası (${res.status}): ${msg}`;
+    ? `OpenAI hesabında kredi/kota yok${detail}. platform.openai.com üzerinden bakiye yükle.`
+    : `Çok fazla istek gönderildi, biraz bekleyip tekrar dene${detail}.`;
+  if (res.status === 404) return `Model bulunamadı, ayarlardaki model adını kontrol et${detail}.`;
+  return `OpenAI hatası (${res.status})${detail}`;
+}
+
+export async function testOpenAIKey(apiKey, model) {
+  let res;
+  try {
+    res = await fetch(`https://api.openai.com/v1/models/${encodeURIComponent(model)}`, { headers: { authorization: `Bearer ${apiKey}` } });
+  } catch {
+    throw new Error("OpenAI'ye bağlanılamadı. İnternet bağlantını kontrol et.");
+  }
+  if (!res.ok) throw new Error(await friendlyHttpError(res));
+  return `Anahtar çalışıyor, ${model} modeli kullanılabilir.`;
 }
 
 export async function analyzeWithOpenAI({ apiKey, model, url, note, onStatus, signal }) {
